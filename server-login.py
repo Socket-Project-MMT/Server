@@ -7,7 +7,7 @@ import json
 
 # Create Socket (TCP) Connection
 ServerSocket = socket.socket(family = socket.AF_INET, type = socket.SOCK_STREAM) 
-host = '127.0.0.1'
+host = ''
 port = 1233
 ThreadCount = 0
 
@@ -19,7 +19,7 @@ except socket.error as e:
 print('Waitiing for a Connection..')
 ServerSocket.listen(5)
 
-with open("test1.json", "r") as openfile:
+with open("dataUsers.json", "r") as openfile:
     # Reading from json file
     HashTable = json.load(openfile)
 
@@ -50,7 +50,7 @@ def threaded_client(connection):
             name: password
         }
 
-        with open("test1.json", "r+") as file:
+        with open("dataUsers.json", "r+") as file:
             data = json.load(file)
             data.update(infor)
             file.seek(0)
