@@ -1,31 +1,83 @@
 import socket
+import os
+import threading
+import hashlib
+import json
+
+
+# Create Socket (TCP) Connection
+ServerSocket = socket.socket(family = socket.AF_INET, type = socket.SOCK_STREAM) 
+host = '127.0.0.1'
+port = 1233
+ThreadCount = 0
+
+try:
+    ServerSocket.bind((host, port))
+except socket.error as e:
+    print(str(e))
+
+print('Waitiing for a Connection..')
+ServerSocket.listen(5)
+
+with open("test1.json", "r") as openfile:
+    # Reading from json file
+    HashTable = json.load(openfile)
 
 
 
-# create an ipv4 (AF_INET) socket object using the tcp protocol (SOCK_STREAM)
-client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# Function : For each client 
+def threaded_client(connection):
+    connection.send(str.encode('ENTER USERNAME : ')) # Request Username
+    name = connection.recv(2048)
+    connection.send(str.encode('ENTER PASSWORD : ')) # Request Password
+    password = connection.recv(2048)
+    password = password.decode()
+    name = name.decode()
+    #password=hashlib.sha256(str.encode(password)).hexdigest() # Password hash using SHA256
+# REGISTERATION PHASE   
+# If new user,  regiter in Hashtable Dictionary  
+    if name not in HashTable:
+        HashTable[name]=password
+        connection.send(str.encode('Registeration Successful')) 
+        print('Registered : ',name)
+        print("{:<8} {:<20}".format('USER','PASSWORD'))
+        for k, v in HashTable.items():
+            label, num = k,v
+            print("{:<8} {:<20}".format(label, num))
+        print("-------------------------------------------")
+        #write users infor to file
+        infor = {
+            name: password
+        }
 
-# connect the client
-# client.connect((target, port))
-HOST = input("Input IP server: ")
-PORT = 1233
-client.connect((HOST, PORT))
-response = client.recv(2048)
-# Input UserName
-name = input(response.decode())	
-client.send(str.encode(name))
-response = client.recv(2048)
-# Input Password
-password = input(response.decode())	
-client.send(str.encode(password))
-''' Response : Status of Connection :
-	1 : Registeration successful 
-	2 : Connection Successful
-	3 : Login Failed
-'''
-# Receive response 
-response = client.recv(2048)
-response = response.decode()
+        with open("test1.json", "r+") as file:
+            data = json.load(file)
+            data.update(infor)
+            file.seek(0)
+            json.dump(data, file)
+        
+        
+    else:
+    # If already existing user, check if the entered password is correct
+        if(HashTable[name] == password):
+            connection.send(str.encode('Connection Successful')) # Response Code for Connected Client 
+            print('Connected : ',name)
+        else:
+            connection.send(str.encode('Login Failed')) # Response code for login failed
+            print('Connection denied : ',name)
+    while True:
+        break
+    connection.close()
 
-print(response)
-client.close()	
+
+
+while True:
+    Client, address = ServerSocket.accept()
+    client_handler = threading.Thread(
+        target=threaded_client,
+        args=(Client,)  
+    )
+    client_handler.start()
+    ThreadCount += 1
+    print('Connection Request: ' + str(ThreadCount))
+ServerSocket.close()
