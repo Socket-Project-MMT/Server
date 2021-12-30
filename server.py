@@ -3,7 +3,7 @@
 from json.decoder import JSONDecodeError
 from json.encoder import JSONEncoder
 import socket 
-import threading
+import threading #
 import json
 import urllib.parse
 import requests
@@ -56,12 +56,14 @@ s.listen()
 print("I'm server, ", HOST)
 print("Server listening on port", port)
 print("Waiting for client")
-data=requests.get(URL)
-print("kkkk")
-print("KK: ", str(data))
-kk=json.loads(data)
-with open('data.json', 'w', encoding='utf-8') as f:
-    json.dump(data, f, ensure_ascii=False, indent=4)
+# data=requests.get(URL)
+# print("kkkk")
+# print("KK: ", str(data))
+# kk=json.loads(data)
+# with open('data.json', 'w', encoding='utf-8') as f:
+#     json.dump(data, f, ensure_ascii=False, indent=4)
+
+# da tieu trinh
 nClient=0
 
 while(nClient<=1000):
@@ -73,6 +75,7 @@ while(nClient<=1000):
   except: 
     print("Error")
   nClient+=1
+#
 
 
 
