@@ -7,7 +7,7 @@ import json
 
 # Create Socket (TCP) Connection
 ServerSocket = socket.socket(family = socket.AF_INET, type = socket.SOCK_STREAM) 
-host = ''
+host = ''   
 port = 1233
 ThreadCount = 0
 
