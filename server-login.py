@@ -70,6 +70,69 @@ def threaded_client(connection):
     connection.close()
 
 
+def checkClientSignUp(username, connection):
+    if(username in HashTable):
+        #connection.send(str.encode('Account existed'))
+        return False
+    return True
+
+def checkClientLogIn(username, password, connection):
+    if(HashTable[username] == password):
+        
+        return True
+    return False
+    
+
+def clientSignUp(username, password, connection):
+    #connection.send(str.encode('ENTER USERNAME : ')) # Request Username
+    name = connection.recv(2048)
+    #connection.send(str.encode('ENTER PASSWORD : ')) # Request Password
+    password = connection.recv(2048)
+
+    if(checkClientSignUp(username, connection) == False):
+       connection.send(str.encode('Account existed'))
+       clientSignUp(username, password, connection)
+
+
+    HashTable[name]=password
+    connection.send(str.encode('Registeration Successful')) 
+    print('Registered : ',name)
+    print("{:<8} {:<20}".format('USER','PASSWORD'))
+    for k, v in HashTable.items():
+        label, num = k,v
+        print("{:<8} {:<20}".format(label, num))
+    print("-------------------------------------------")
+    #write users infor to file
+    infor = {
+        name: password
+    }
+
+    with open("dataUsers.json", "r+") as file:
+        data = json.load(file)
+        data.update(infor)
+        file.seek(0)
+        json.dump(data, file)
+
+def clientLogIn(username, password, connection):
+    if(checkClientLogIn(username, password, connection) == False):
+        connection.send(str.encode('Username or Password is incorrect')) # Response code for login failed
+        print('Connection denied : ',username)
+    else:
+        connection.send(str.encode('Connection Successful')) # Response Code for Connected Client 
+        print('Connected : ',username)
+        print("{:<8} {:<20}".format('USER','PASSWORD'))
+        for k, v in HashTable.items():
+            label, num = k,v
+            print("{:<8} {:<20}".format(label, num))
+            print("-------------------------------------------")
+    
+
+def handleServer(connection, )
+def runServer():
+    try:
+
+
+
 
 while True:
     Client, address = ServerSocket.accept()
@@ -80,4 +143,5 @@ while True:
     client_handler.start()
     ThreadCount += 1
     print('Connection Request: ' + str(ThreadCount))
+
 ServerSocket.close()
