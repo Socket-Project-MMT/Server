@@ -1,5 +1,5 @@
 # fileserver.py
-coding: utf-8 
+
 import socket 
 import threading
 import json
@@ -14,11 +14,10 @@ import tkinter
 
 HOST = "127.0.0.1"
 port = 6767
-FORMAT="utf8"
+FORMAT="utf-8"
 URL="https://tygia.com/json.php"
-# URL=
-# 
-# 
+# Ngày 
+DATE="20213112"
 
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -34,25 +33,33 @@ with open("data.json", "r") as openfile:
 #list theo gold
 values=datafile["golds"]
 # loc mot gia tri theo tri so co dieu kien
-output_dict = [x for x in values if x["date"] == "20211231"]
 
-# print(output_dict)
 
 searchlist=[]
+# namelist la ten brand co dinh
 
 namelist=[]
-
+SJC=[]
 array=[]
 # loc het danh sach theo tri so, cos mot dieu kien
 for entry in datafile["golds"]:
-  if(entry["date"]=="20211231"):
+  if(entry["date"]==DATE):
     array.append(entry["value"])
     for entr in entry["value"]:
-      namelist.append(entr["code"])
+      if(entr["type"]=="SJC"):
+        namelist.append(entr["brand"])
+        #SJC.append(entr)
+# print("type sjc", namelist)
 # array la mang vang theo ngay
+for entry in SJC:
+  if(entry["brand"]==msg):
+    print(entry["buy"])
+for entry in datafile["golds"]:
+  dates.append(entry["date"])
+# for entry in namelist:
+#   if(entry=="SJC"):
+#     SJC.append(entry)
 
-# for entry in array:
-#   namelist.append(entry["code"])
 
 with open("dataUsers.json", "r") as openfile:
     # Reading from json file
@@ -110,7 +117,7 @@ def clientSignUp(username, password, connection):
               data = json.load(file)
               data.update(infor)
               file.seek(0)
-              json.dump(data, file)
+              json.dump(data, file, intent=4)
           return True
 
     except: 
@@ -127,8 +134,30 @@ def clientLogIn(username, password, connection):
         print('Connected : ',username)
         return True
 def Search(conn):
+
   global namelist
+  global dates
   sendList(conn, namelist)
+  sendList(conn, dates) 
+  global datafile
+  infor=["", ""]
+  infor=recvList(conn)
+
+  response=[]
+  for entry in datafile["golds"]:
+    if(entry["date"]==infor[0]):
+      array.append(entry["value"])
+      for entr in entry["value"]:
+        if(entr["type"]=="SJC"):
+          namelist.append(entr["brand"])
+          SJC.append(entr)
+  for entry in SJC:
+    if(entry["brand"]==infor[1]):
+      response.append(entry["buy"])
+      response.append(entry["sell"])
+  sendList(conn, response)
+  print(response)
+
 def handleClient(conn: socket, addr):
   username=""
   password=""
@@ -150,16 +179,13 @@ def handleClient(conn: socket, addr):
         HashTable = json.load(openfile)
       checkLogin = clientLogIn(username, password, conn)
       if(checkLogin==True):
-        newclient = {
-          username: password
-        }
         msg="signinsuccess"
         conn.sendall(msg.encode(FORMAT))
-        ipClientlist.append(newclient)
+        ipClientlist.append(username)
         #search function
         Search(conn)
-        # for user, password in ipClientlist.items(): 
-        #   Label(window, text= "kkkk", width="220").grid(column=columnnum, row=3)
+        # for user in ipClientlist: 
+        #   Label(window, text = user, width="220").grid(row=10, column=columnnum)
         #   columnnum+=1
 
     if(option=="signup"):
@@ -168,18 +194,16 @@ def handleClient(conn: socket, addr):
 
         checkLogin = clientLogIn(username, password, conn)
         if(checkLogin==True):
-          newclient = {
-            username: password
-          }
+          
           msg="signupsuccess"
           conn.sendall(msg.encode(FORMAT))
-        ipClientlist.append(newclient)
+          Search(conn)
+          ipClientlist.append(username)
       else: 
         msg="signupfail"
         conn.sendall(msg.encode(FORMAT))
-        handleClient(conn, addr)
-        # for user, password in ipClientlist.items(): 
-        #   Label(window, text= user, width="220").grid(column=columnnum, row=3)
+        # for user in ipClientlist: 
+        #   Label(window, text = user, width="220").grid(row=3, column=columnnum)
         #   columnnum+=1
     conn.close()
 
@@ -196,7 +220,7 @@ def mymain():
   s.bind((HOST, port))
   s.listen()
   global nClient
-  while(nClient<=10):
+  while(nClient<=100):
     try: 
       conn, addr = s.accept()
       print(conn, addr)
