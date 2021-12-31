@@ -1,5 +1,5 @@
 # fileserver.py
-
+coding: utf-8 
 import socket 
 import threading
 import json
@@ -27,13 +27,32 @@ s.listen()
 
 ipClientlist = []
 length=len(ipClientlist)
-
+dates=[]
 with open("data.json", "r") as openfile:
     # Reading from json file
     datafile = json.load(openfile)
+#list theo gold
+values=datafile["golds"]
+# loc mot gia tri theo tri so co dieu kien
+output_dict = [x for x in values if x["date"] == "20211231"]
 
-values=datafile["rates"][0]["value"]
-sjclist=values["code"]
+# print(output_dict)
+
+searchlist=[]
+
+namelist=[]
+
+array=[]
+# loc het danh sach theo tri so, cos mot dieu kien
+for entry in datafile["golds"]:
+  if(entry["date"]=="20211231"):
+    array.append(entry["value"])
+    for entr in entry["value"]:
+      namelist.append(entr["code"])
+# array la mang vang theo ngay
+
+# for entry in array:
+#   namelist.append(entry["code"])
 
 with open("dataUsers.json", "r") as openfile:
     # Reading from json file
@@ -49,7 +68,6 @@ def recvList(conn):
   item=conn.recv(1024).decode(FORMAT)
   while(item!="end"):
     mylist.append(item)
-    print("recv f", item)
     conn.sendall(item.encode(FORMAT))
     item=conn.recv(1024).decode(FORMAT)
 
@@ -58,7 +76,6 @@ def sendList(conn, list):
     for item in list:
         conn.sendall(item.encode(FORMAT))
         msg=conn.recv(1024).decode(FORMAT)
-        print("msg", msg)
     msg="end"
     conn.sendall(msg.encode(FORMAT))
 def checkClientSignUp(username):
@@ -109,6 +126,9 @@ def clientLogIn(username, password, connection):
         # Response Code for Connected Client 
         print('Connected : ',username)
         return True
+def Search(conn):
+  global namelist
+  sendList(conn, namelist)
 def handleClient(conn: socket, addr):
   username=""
   password=""
@@ -137,10 +157,10 @@ def handleClient(conn: socket, addr):
         conn.sendall(msg.encode(FORMAT))
         ipClientlist.append(newclient)
         #search function
-        
-        for user, password in ipClientlist.items(): 
-          Label(window, text= "kkkk", width="220").grid(column=columnnum, row=3)
-          columnnum+=1
+        Search(conn)
+        # for user, password in ipClientlist.items(): 
+        #   Label(window, text= "kkkk", width="220").grid(column=columnnum, row=3)
+        #   columnnum+=1
 
     if(option=="signup"):
       checksignup = clientSignUp(username, password, conn)
