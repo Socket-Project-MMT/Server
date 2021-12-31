@@ -5,23 +5,6 @@ import hashlib
 import json
 
 
-# Create Socket (TCP) Connection
-ServerSocket = socket.socket(family = socket.AF_INET, type = socket.SOCK_STREAM) 
-host = ''   
-port = 1233
-ThreadCount = 0
-
-try:
-    ServerSocket.bind((host, port))
-except socket.error as e:
-    print(str(e))
-
-print('Waitiing for a Connection..')
-ServerSocket.listen(5)
-
-with open("dataUsers.json", "r") as openfile:
-    # Reading from json file
-    HashTable = json.load(openfile)
 
 
 
@@ -84,36 +67,44 @@ def checkClientLogIn(username, password, connection):
     
 
 def clientSignUp(username, password, connection):
-    #connection.send(str.encode('ENTER USERNAME : ')) # Request Username
-    name = connection.recv(2048)
-    #connection.send(str.encode('ENTER PASSWORD : ')) # Request Password
-    password = connection.recv(2048)
+    try:
+        #connection.send(str.encode('ENTER USERNAME : ')) # Request Username
+        username = connection.recv(2048)
+        #connection.send(str.encode('ENTER PASSWORD : ')) # Request Password
+        password = connection.recv(2048)
 
-    if(checkClientSignUp(username, connection) == False):
-       connection.send(str.encode('Account existed'))
-       clientSignUp(username, password, connection)
+        if(checkClientSignUp(username, connection) == False):
+            connection.send(str.encode('Account existed'))
+            clientSignUp(username, password, connection)
 
 
-    HashTable[name]=password
-    connection.send(str.encode('Registeration Successful')) 
-    print('Registered : ',name)
-    print("{:<8} {:<20}".format('USER','PASSWORD'))
-    for k, v in HashTable.items():
-        label, num = k,v
-        print("{:<8} {:<20}".format(label, num))
-    print("-------------------------------------------")
-    #write users infor to file
-    infor = {
-        name: password
-    }
+        HashTable[username]=password
+        connection.send(str.encode('Registeration Successful')) 
+        print('Registered : ',username)
+        print("{:<8} {:<20}".format('USER','PASSWORD'))
+        for k, v in HashTable.items():
+            label, num = k,v
+            print("{:<8} {:<20}".format(label, num))
+        print("-------------------------------------------")
+        #write users infor to file
+        infor = {
+            username: password
+        }
 
-    with open("dataUsers.json", "r+") as file:
-        data = json.load(file)
-        data.update(infor)
-        file.seek(0)
-        json.dump(data, file)
+        with open("dataUsers.json", "r+") as file:
+            data = json.load(file)
+            data.update(infor)
+            file.seek(0)
+            json.dump(data, file)
+
+    except: 
+        print("Error")
 
 def clientLogIn(username, password, connection):
+    #connection.send(str.encode('ENTER USERNAME : ')) # Request Username
+    username = connection.recv(2048)
+    #connection.send(str.encode('ENTER PASSWORD : ')) # Request Password
+    password = connection.recv(2048)
     if(checkClientLogIn(username, password, connection) == False):
         connection.send(str.encode('Username or Password is incorrect')) # Response code for login failed
         print('Connection denied : ',username)
@@ -127,11 +118,31 @@ def clientLogIn(username, password, connection):
             print("-------------------------------------------")
     
 
-def handleServer(connection, )
-def runServer():
-    try:
+# def handleServer(connection, )
+# def runServer():
+#     try:
 
 
+#---------------------------main -----------------------
+# 
+
+# Create Socket (TCP) Connection
+ServerSocket = socket.socket(family = socket.AF_INET, type = socket.SOCK_STREAM) 
+host = '127.0.0.1'   
+port = 60000
+ThreadCount = 0
+
+try:
+    ServerSocket.bind((host, port))
+except socket.error as e:
+    print(str(e))
+
+print('Waitiing for a Connection..')
+ServerSocket.listen(5)
+
+with open("dataUsers.json", "r") as openfile:
+    # Reading from json file
+    HashTable = json.load(openfile)
 
 
 while True:
