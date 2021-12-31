@@ -138,6 +138,8 @@ def Search(conn):
   global namelist
   global dates
   sendList(conn, namelist)
+  msg="break"
+  conn.sendall(msg.encode(FORMAT))
   sendList(conn, dates) 
   global datafile
   infor=["", ""]
@@ -197,8 +199,9 @@ def handleClient(conn: socket, addr):
           
           msg="signupsuccess"
           conn.sendall(msg.encode(FORMAT))
-          Search(conn)
           ipClientlist.append(username)
+          Search(conn)
+        
       else: 
         msg="signupfail"
         conn.sendall(msg.encode(FORMAT))
